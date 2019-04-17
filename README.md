@@ -1,3 +1,9 @@
+Running the AI agents:
+
+Must install pynput
+    
+    $ pip install pynput
+
 2048-python
 ===========
 
