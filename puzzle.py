@@ -31,6 +31,7 @@ class GameGrid(Frame):
         self.init_grid()
         self.init_matrix()
         self.update_grid_cells()
+        self.hide()
 
     def getCommand(self, str):
         return self.commands[repr(str)]
@@ -146,6 +147,9 @@ class GameGrid(Frame):
             index = (self.gen(), self.gen())
         self.matrix[index[0]][index[1]] = 2
 
+    def hide(self):
+        self.master.withdraw()
+
     def quit(self):
         self.master.destroy()
 
@@ -161,7 +165,7 @@ class GameGrid(Frame):
 
 
 def main():
-    for i in range (0, 1):
+    for i in range (0, 100):
         gamegrid = GameGrid()
         gamegrid.mainloop()
 
