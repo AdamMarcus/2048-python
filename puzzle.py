@@ -12,7 +12,8 @@ class GameGrid(Frame):
         Frame.__init__(self)
 
         # self.agent = RandomAgent(self, waitTime=0)
-        self.agent = PatternAgentULRD(self, waitTime=0)
+        # self.agent = PatternAgentULRD(self, waitTime=0)
+        self.agent = PatternAgentLURD(self, waitTime=0)
 
         self.grid()
         self.master.title('2048')
@@ -136,12 +137,16 @@ class GameGrid(Frame):
                         text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(
                         text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.quit()
 
     def generate_next(self):
         index = (self.gen(), self.gen())
         while self.matrix[index[0]][index[1]] != 0:
             index = (self.gen(), self.gen())
         self.matrix[index[0]][index[1]] = 2
+
+    def quit(self):
+        self.master.destroy()
 
     def task(self):
         self.agent.promptAgent()
