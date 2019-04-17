@@ -1,6 +1,10 @@
 import random
 import constants as c
 import time
+from sklearn.neural_network import MLPClassifier
+
+# Pickle for serielizing data and re-adding
+# Save and plot average fittness over generations? (Get an A)
 
 class Agent:
     def __init__(self, gGrid, waitTime=0.1):
@@ -36,21 +40,22 @@ class RandomAgent(Agent):
         count = 0
         while not done:
             choice = random.choices([c.KEY_UP_AGENT, c.KEY_DOWN_AGENT, c.KEY_LEFT_AGENT, c.KEY_RIGHT_AGENT], weights=[0.25, 0.25, 0.25, 0.25])[0]
-            print("Temp choice: ", choice)
+            # print("Temp choice: ", choice)
             count += 1
             done = self.checkMoveValid(choice)
 
             # If I have lost
             if count > 4:
                 # do something
-                print("I've lost")
+                # print("I've lost")
                 #############################
                 print("########Last Resort!!!!!!")
                 self.myGrid.after(20, self.myGrid.task)
+                # time.sleep(1)
                 #############################
                 break
 
-        print("Random agent choice: ", choice)
+        # print("Random agent choice: ", choice)
         self.pressKey(choice)
 
 
@@ -76,7 +81,7 @@ class PatternAgentULRD(Agent):
                 if not self.checkMoveValid(choice):
                     # Always try left last
                     choice = c.KEY_DOWN_AGENT
-        print("Random agent choice: ", choice)
+        # print("Random agent choice: ", choice)
         self.pressKey(choice)
 
 class PatternAgentLURD(Agent):
@@ -100,8 +105,73 @@ class PatternAgentLURD(Agent):
                 if not self.checkMoveValid(choice):
                     # Always try left last
                     choice = c.KEY_DOWN_AGENT
-        print("Random agent choice: ", choice)
+        # print("Random agent choice: ", choice)
         self.pressKey(choice)
 
+class ManualAgent(Agent):
+    def __init__(self, gGrid, waitTime=0.1):
+        #super(RandomAgent, self)._init__(self, waitTime=waitTime)
+        self.waitTime = waitTime
+        self.myGrid = gGrid
+
+    def promptAgent(self):
+        print("Wait for user input")
+
+
+class DNNAgent(Agent):
+    def __init__(self, gGrid, waitTime=0.1, trainName=None):
+        self.waitTime = waitTime
+        self.myGrid = gGrid
+
+        # Init neural net
+        # Number and size of hidden layers
+        self.size = [32]
+        # Using "relu" activation function, a standard in the industry
+        self.mlp = MLPClassifier(hidden_layer_sizes=self.size, activation='relu')
+        self.xTrain, self.yTrain = self.getTrains(trainName)
+        self.mlp.fit(self.xTrain, self.yTrain)
+
+
+    def promptAgent(self):
+        # Get list form of matrix
+        inMat = self.convMat1x16(self.getCurrMat())
+        # Input matrix into mlp
+        choice = self.convDirCode(self.mlp.predict(inMat))
+
+        while self.checkMoveValid(choice):
+            choice = random.choices([c.KEY_UP_AGENT, c.KEY_DOWN_AGENT, c.KEY_LEFT_AGENT, c.KEY_RIGHT_AGENT], weights=[0.25, 0.25, 0.25, 0.25])[0]
+        print(choice)
+        self.pressKey(choice)
+
+
+    def getTrains(self, trainName):
+        if trainName == None:
+            print("Use Default Train Data")
+            # A non-working base xTrain set
+            xTrain = [[0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0], [0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0]]
+            # The yTrain dataset and all of the possible output's it contains is the only source for output labels
+            yTrain = [3, 0, 1, 2]
+            return(xTrain, yTrain)
+        else:
+            print("Have Train Data")
+
+    def convMat1x16(self, mat):
+        outMat1x16 = []
+        for i in range(4):
+            for j in range(4):
+                outMat1x16.append(mat[i][j])
+        print(outMat1x16)
+        # Weird thing, need to return the single list in a list of lists
+        return [outMat1x16]
+
+    def convDirCode(self, code):
+        if code == c.UP_CODE:
+            return c.KEY_UP_AGENT
+        elif code == c.RIGHT_CODE:
+            return c.KEY_RIGHT_AGENT
+        elif code == c.DOWN_CODE:
+            return c.KEY_DOWN_AGENT
+        elif code == c.LEFT_CODE:
+            return c.KEY_LEFT_AGENT
 
 

@@ -12,14 +12,15 @@ class GameGrid(Frame):
         Frame.__init__(self)
 
         # self.agent = RandomAgent(self, waitTime=0)
-        # self.agent = PatternAgentULRD(self, waitTime=0)
-        self.agent = PatternAgentLURD(self, waitTime=0)
+        # self.agent = PatternAgentULRD(self, waitTime=0.01)
+        # self.agent = PatternAgentLURD(self, waitTime=0)
+        # self.agent = ManualAgent(self, waitTime=0)
+        self.agent = DNNAgent(self)
 
         self.grid()
         self.master.title('2048')
         self.master.bind("<Key>", self.key_down)
 
-        # self.gamelogic = gamelogic
         self.commands = {c.KEY_UP: logic.up, c.KEY_DOWN: logic.down,
                          c.KEY_LEFT: logic.left, c.KEY_RIGHT: logic.right,
                          c.KEY_UP_ALT: logic.up, c.KEY_DOWN_ALT: logic.down,
@@ -96,14 +97,14 @@ class GameGrid(Frame):
                 self.history_matrixs.append(self.matrix)
                 self.update_grid_cells()
                 done = False
-                print("pastDone")
+                # print("pastDone")
                 if logic.game_state(self.matrix) == 'win':
                     self.grid_cells[1][1].configure(
                         text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(
                         text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                 elif logic.game_state(self.matrix) == 'lose':
-                    print("LOOOOOOOOOOOOOSER")
+                    # print("LOOOOOOOOOOOOOSER")
                     self.grid_cells[1][1].configure(
                         text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(
@@ -125,14 +126,14 @@ class GameGrid(Frame):
                 self.history_matrixs.append(self.matrix)
                 self.update_grid_cells()
                 done = False
-                print("pastDone")
+                # print("pastDone")
                 if logic.game_state(self.matrix) == 'win':
                     self.grid_cells[1][1].configure(
                         text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(
                         text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                 elif logic.game_state(self.matrix) == 'lose':
-                    print("LOOOOOOOOOOOOOSER")
+                    # print("LOOOOOOOOOOOOOSER")
                     self.grid_cells[1][1].configure(
                         text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(
@@ -160,12 +161,14 @@ class GameGrid(Frame):
 
 
 def main():
-    gamegrid = GameGrid()
-    gamegrid.mainloop()
+    for i in range (0, 1000):
+        gamegrid = GameGrid()
+        gamegrid.mainloop()
 
 
-    print(gamegrid.matrix)
-    print("Score: ", gamegrid.scoreMatrix())
+        print(gamegrid.matrix)
+        print("Score: ", gamegrid.scoreMatrix())
+        # time.sleep(2)
 
 
 main()
