@@ -15,6 +15,11 @@ class Agent:
     def getCurrMat(self):
         return self.myGrid.matrix
 
+    def pressKey(self, key):
+        time.sleep(self.waitTime)
+        self.myGrid.key_down_str(key)
+
+
 class RandomAgent(Agent):
     def __init__(self, gGrid, waitTime=0.1):
         #super(RandomAgent, self)._init__(self, waitTime=waitTime)
@@ -38,8 +43,8 @@ class RandomAgent(Agent):
                 break
 
         print("Random agent choice: ", choice)
-        time.sleep(self.waitTime)
-        self.myGrid.key_down_str(choice)
+        self.pressKey(choice)
+
 
 
 class PatternAgentULRD(Agent):
@@ -68,8 +73,7 @@ class PatternAgentULRD(Agent):
                     choice = c.KEY_DOWN_AGENT
                     _, done = self.myGrid.getCommand(choice)(self.getCurrMat())
         print("Random agent choice: ", choice)
-        time.sleep(self.waitTime)
-        self.myGrid.key_down_str(choice)
+        self.pressKey(choice)
 
 
 
