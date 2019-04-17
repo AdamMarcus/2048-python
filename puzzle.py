@@ -11,11 +11,11 @@ class GameGrid(Frame):
     def __init__(self):
         Frame.__init__(self)
 
-        # self.agent = RandomAgent(self, waitTime=0)
+        # self.agent = RandomAgent(self, waitTime=0, )
         # self.agent = PatternAgentULRD(self, waitTime=0.01)
         # self.agent = PatternAgentLURD(self, waitTime=0)
         # self.agent = ManualAgent(self, waitTime=0)
-        self.agent = DNNAgent(self)
+        self.agent = DNNAgent(self, waitTime=0, trainName="training_epochs/train.pickle")
 
         self.grid()
         self.master.title('2048')
@@ -161,14 +161,19 @@ class GameGrid(Frame):
 
 
 def main():
-    for i in range (0, 1000):
+    for i in range (0, 1):
         gamegrid = GameGrid()
         gamegrid.mainloop()
 
 
+
         print(gamegrid.matrix)
         print("Score: ", gamegrid.scoreMatrix())
-        # time.sleep(2)
+
+        gamegrid.agent.setScore(gamegrid.scoreMatrix())
+        gamegrid.agent.pikPakGame()
+
+        time.sleep(2)
 
 
 main()

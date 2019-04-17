@@ -2,15 +2,22 @@ import random
 import constants as c
 import time
 from sklearn.neural_network import MLPClassifier
+import pickle
 
 # Pickle for serielizing data and re-adding
 # Save and plot average fittness over generations? (Get an A)
 
 class Agent:
-    def __init__(self, gGrid, waitTime=0.1):
+    def __init__(self, gGrid, waitTime=0.1, gameSessionFile=None):
         self.waitTime = waitTime
         self.myGrid = gGrid
+        self.gameSessionFile = gameSessionFile
         print("__init__ not defined for abstract Agent")
+
+        self._moveID = 0
+        self._matRecord = []
+        self._moveRecord = []
+        self._score = None
 
     # This function is to be populated with code for the agent to respond to a new board being given after an update and will trigger a command.
     def promptAgent(self, currentMatrix):
@@ -27,13 +34,63 @@ class Agent:
         _, done = self.myGrid.getCommand(move)(self.getCurrMat())
         return done
 
+    def incrementMoveID(self):
+        self._moveID += 1
+
+    def appendMove(self, move):
+        self._matRecord.append(self.convMat1x16(self.getCurrMat()))
+        self._moveRecord.append(self.convDirToDirCode(move))
+        self.incrementMoveID()
+
+    def pikPakGame(self):
+        xAll = self._matRecord
+        yAll = self._moveRecord
+        # print("write data")
+        # print(xAll)
+        # print(yAll)
+        # print(self._score)
+        with open('training_epochs/train.pickle', 'wb') as f:
+            pickle.dump((xAll, yAll, self._score), f)
+
+    def setScore(self, score):
+        self._score = score
+
+    def convMat1x16(self, mat):
+        outMat1x16 = []
+        for i in range(4):
+            for j in range(4):
+                outMat1x16.append(mat[i][j])
+        # print(outMat1x16)
+        # Weird thing, need to return the single list in a list of lists
+        return outMat1x16
+
+    def convDirCodeToDir(self, code):
+        if code == c.UP_CODE:
+            return c.KEY_UP_AGENT
+        elif code == c.RIGHT_CODE:
+            return c.KEY_RIGHT_AGENT
+        elif code == c.DOWN_CODE:
+            return c.KEY_DOWN_AGENT
+        elif code == c.LEFT_CODE:
+            return c.KEY_LEFT_AGENT
+
+    def convDirToDirCode(self, dir):
+        if dir == c.KEY_UP_AGENT:
+            return c.UP_CODE
+        elif dir == c.KEY_RIGHT_AGENT:
+            return c.RIGHT_CODE
+        elif dir == c.KEY_DOWN_AGENT:
+            return c.DOWN_CODE
+        elif dir == c.KEY_LEFT_AGENT:
+            return c.LEFT_CODE
+
+
+
 
 class RandomAgent(Agent):
-    def __init__(self, gGrid, waitTime=0.1):
-        #super(RandomAgent, self)._init__(self, waitTime=waitTime)
-        self.waitTime = waitTime
-        self.myGrid = gGrid
-        # self.keyboard = Controller()
+    def __init__(self, gGrid, waitTime=0.1, gameSessionFile=None):
+        super().__init__(gGrid, waitTime=waitTime, gameSessionFile=gameSessionFile)
+
 
     def promptAgent(self):
         done = False
@@ -56,16 +113,14 @@ class RandomAgent(Agent):
                 break
 
         # print("Random agent choice: ", choice)
+        self.appendMove(choice)
         self.pressKey(choice)
 
 
 
 class PatternAgentULRD(Agent):
-    def __init__(self, gGrid, waitTime=0.1):
-        #super(RandomAgent, self)._init__(self, waitTime=waitTime)
-        self.waitTime = waitTime
-        self.myGrid = gGrid
-        # self.keyboard = Controller()
+    def __init__(self, gGrid, waitTime=0.1, gameSessionFile=None):
+        super().__init__(gGrid, waitTime=waitTime, gameSessionFile=gameSessionFile)
 
     def promptAgent(self):
 
@@ -82,14 +137,12 @@ class PatternAgentULRD(Agent):
                     # Always try left last
                     choice = c.KEY_DOWN_AGENT
         # print("Random agent choice: ", choice)
+        self.appendMove(choice)
         self.pressKey(choice)
 
 class PatternAgentLURD(Agent):
-    def __init__(self, gGrid, waitTime=0.1):
-        #super(RandomAgent, self)._init__(self, waitTime=waitTime)
-        self.waitTime = waitTime
-        self.myGrid = gGrid
-        # self.keyboard = Controller()
+    def __init__(self, gGrid, waitTime=0.1, gameSessionFile=None):
+        super().__init__(gGrid, waitTime=waitTime, gameSessionFile=gameSessionFile)
 
     def promptAgent(self):
 
@@ -106,22 +159,20 @@ class PatternAgentLURD(Agent):
                     # Always try left last
                     choice = c.KEY_DOWN_AGENT
         # print("Random agent choice: ", choice)
+        self.appendMove(choice)
         self.pressKey(choice)
 
 class ManualAgent(Agent):
-    def __init__(self, gGrid, waitTime=0.1):
-        #super(RandomAgent, self)._init__(self, waitTime=waitTime)
-        self.waitTime = waitTime
-        self.myGrid = gGrid
+    def __init__(self, gGrid, waitTime=0.1, gameSessionFile=None):
+        super().__init__(gGrid, waitTime=waitTime, gameSessionFile=gameSessionFile)
 
     def promptAgent(self):
         print("Wait for user input")
 
 
 class DNNAgent(Agent):
-    def __init__(self, gGrid, waitTime=0.1, trainName=None):
-        self.waitTime = waitTime
-        self.myGrid = gGrid
+    def __init__(self, gGrid, waitTime=0.1, gameSessionFile=None, trainName=None):
+        super().__init__(gGrid, waitTime=waitTime, gameSessionFile=gameSessionFile)
 
         # Init neural net
         # Number and size of hidden layers
@@ -131,16 +182,21 @@ class DNNAgent(Agent):
         self.xTrain, self.yTrain = self.getTrains(trainName)
         self.mlp.fit(self.xTrain, self.yTrain)
 
-
     def promptAgent(self):
         # Get list form of matrix
-        inMat = self.convMat1x16(self.getCurrMat())
+        inMat = [self.convMat1x16(self.getCurrMat())]
         # Input matrix into mlp
-        choice = self.convDirCode(self.mlp.predict(inMat))
+        pred = self.mlp.predict(inMat)
+        # print(pred)
+        choice = self.convDirCodeToDir(pred)
+        # print(choice)
 
-        while self.checkMoveValid(choice):
+        while not self.checkMoveValid(choice):
+            # print("Move ", choice, " was not valid. Getting new choice")
             choice = random.choices([c.KEY_UP_AGENT, c.KEY_DOWN_AGENT, c.KEY_LEFT_AGENT, c.KEY_RIGHT_AGENT], weights=[0.25, 0.25, 0.25, 0.25])[0]
-        print(choice)
+
+        # print(choice)
+        self.appendMove(choice)
         self.pressKey(choice)
 
 
@@ -153,25 +209,10 @@ class DNNAgent(Agent):
             yTrain = [3, 0, 1, 2]
             return(xTrain, yTrain)
         else:
-            print("Have Train Data")
-
-    def convMat1x16(self, mat):
-        outMat1x16 = []
-        for i in range(4):
-            for j in range(4):
-                outMat1x16.append(mat[i][j])
-        print(outMat1x16)
-        # Weird thing, need to return the single list in a list of lists
-        return [outMat1x16]
-
-    def convDirCode(self, code):
-        if code == c.UP_CODE:
-            return c.KEY_UP_AGENT
-        elif code == c.RIGHT_CODE:
-            return c.KEY_RIGHT_AGENT
-        elif code == c.DOWN_CODE:
-            return c.KEY_DOWN_AGENT
-        elif code == c.LEFT_CODE:
-            return c.KEY_LEFT_AGENT
-
-
+            # xTrain, yTrain = []
+            with open(trainName, 'rb') as f:
+                (xTrain, yTrain, score) = pickle.load(f)
+            # print("Have Train Data")
+            # print(xTrain)
+            # print(yTrain)
+            return (xTrain, yTrain)
