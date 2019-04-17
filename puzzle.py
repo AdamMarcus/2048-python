@@ -4,10 +4,14 @@ from tkinter import Frame, Label, CENTER
 import logic
 import constants as c
 
+from agent import RandomAgent
+
 
 class GameGrid(Frame):
     def __init__(self):
         Frame.__init__(self)
+
+        self.agent = RandomAgent(self, waitTime=0)
 
         self.grid()
         self.master.title('2048')
@@ -25,7 +29,8 @@ class GameGrid(Frame):
         self.init_matrix()
         self.update_grid_cells()
 
-        self.mainloop()
+    def getCommand(self, str):
+        return self.commands[repr(str)]
 
     def init_grid(self):
         background = Frame(self, bg=c.BACKGROUND_COLOR_GAME,
@@ -69,6 +74,9 @@ class GameGrid(Frame):
                         new_number), bg=c.BACKGROUND_COLOR_DICT[new_number],
                         fg=c.CELL_COLOR_DICT[new_number])
         self.update_idletasks()
+        #############################
+        self.after(0, self.task)
+        #############################
 
     def key_down(self, event):
         key = repr(event.char)
@@ -77,19 +85,23 @@ class GameGrid(Frame):
             self.update_grid_cells()
             print('back on step total step:', len(self.history_matrixs))
         elif key in self.commands:
+            #AA: Perform key command
             self.matrix, done = self.commands[repr(event.char)](self.matrix)
             if done:
+                #AA: Add a 2 to a random location?
                 self.matrix = logic.add_two(self.matrix)
                 # record last move
                 self.history_matrixs.append(self.matrix)
                 self.update_grid_cells()
                 done = False
+                print("pastDone")
                 if logic.game_state(self.matrix) == 'win':
                     self.grid_cells[1][1].configure(
                         text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(
                         text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                if logic.game_state(self.matrix) == 'lose':
+                elif logic.game_state(self.matrix) == 'lose':
+                    print("LOOOOOOOOOOOOOSER")
                     self.grid_cells[1][1].configure(
                         text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(
@@ -101,5 +113,24 @@ class GameGrid(Frame):
             index = (self.gen(), self.gen())
         self.matrix[index[0]][index[1]] = 2
 
+    def task(self):
+        self.agent.promptAgent()
 
-gamegrid = GameGrid()
+    def scoreMatrix(self):
+        sum = 0
+        for i in range(4):
+            for j in range(4):
+                sum += self.matrix[i][j]
+        return sum
+
+
+def main():
+    gamegrid = GameGrid()
+    gamegrid.mainloop()
+
+
+    print(gamegrid.matrix)
+    print("Score: ", gamegrid.scoreMatrix())
+
+
+main()
