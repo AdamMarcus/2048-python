@@ -4,14 +4,15 @@ from tkinter import Frame, Label, CENTER
 import logic
 import constants as c
 
-from agent import RandomAgent
+from agent import *
 
 
 class GameGrid(Frame):
     def __init__(self):
         Frame.__init__(self)
 
-        self.agent = RandomAgent(self, waitTime=0)
+        # self.agent = RandomAgent(self, waitTime=0)
+        self.agent = PatternAgentULRD(self, waitTime=0)
 
         self.grid()
         self.master.title('2048')
