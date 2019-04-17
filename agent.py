@@ -1,11 +1,6 @@
-# import util
 import random
 import constants as c
-from pynput.keyboard import Key, Controller
 import time
-import logic
-# import numpy as np
-# import np.random
 
 class Agent:
     def __init__(self, gGrid, waitTime=0.1):
@@ -25,7 +20,7 @@ class RandomAgent(Agent):
         #super(RandomAgent, self)._init__(self, waitTime=waitTime)
         self.waitTime = waitTime
         self.myGrid = gGrid
-        self.keyboard = Controller()
+        # self.keyboard = Controller()
 
     def promptAgent(self):
         done = False
@@ -44,8 +39,7 @@ class RandomAgent(Agent):
 
         print("Random agent choice: ", choice)
         time.sleep(self.waitTime)
-        self.keyboard.press(choice)
-        self.keyboard.release(choice)
+        self.myGrid.key_down_str(choice)
 
 
 class PatternAgentULRD(Agent):
@@ -53,7 +47,7 @@ class PatternAgentULRD(Agent):
         #super(RandomAgent, self)._init__(self, waitTime=waitTime)
         self.waitTime = waitTime
         self.myGrid = gGrid
-        self.keyboard = Controller()
+        # self.keyboard = Controller()
 
     def promptAgent(self):
 
@@ -75,8 +69,7 @@ class PatternAgentULRD(Agent):
                     _, done = self.myGrid.getCommand(choice)(self.getCurrMat())
         print("Random agent choice: ", choice)
         time.sleep(self.waitTime)
-        self.keyboard.press(choice)
-        self.keyboard.release(choice)
+        self.myGrid.key_down_str(choice)
 
 
 
