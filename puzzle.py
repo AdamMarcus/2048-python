@@ -11,11 +11,11 @@ class GameGrid(Frame):
     def __init__(self):
         Frame.__init__(self)
 
-        # self.agent = RandomAgent(self, waitTime=0, )
-        # self.agent = PatternAgentULRD(self, waitTime=0.01)
-        # self.agent = PatternAgentLURD(self, waitTime=0)
-        # self.agent = ManualAgent(self, waitTime=0)
-        self.agent = DNNAgent(self, waitTime=0, trainName="training_epochs/train.pickle")
+        # self.agent = RandomAgent(self, waitTime=0.1)
+        # self.agent = PatternAgentULRD(self, waitTime=0.0)
+        # self.agent = PatternAgentLURD(self, waitTime=0.1)
+        self.agent = ManualAgent(self, waitTime=0.1)
+        # self.agent = DNNAgent(self, waitTime=0.1, trainName="training_epochs/train.pickle")
 
         self.grid()
         self.master.title('2048')
@@ -31,7 +31,7 @@ class GameGrid(Frame):
         self.init_grid()
         self.init_matrix()
         self.update_grid_cells()
-        self.hide()
+        # self.hide()
 
     def getCommand(self, str):
         return self.commands[repr(str)]
@@ -162,22 +162,3 @@ class GameGrid(Frame):
             for j in range(4):
                 sum += self.matrix[i][j]
         return sum
-
-
-def main():
-    for i in range (0, 100):
-        gamegrid = GameGrid()
-        gamegrid.mainloop()
-
-
-
-        print(gamegrid.matrix)
-        print("Score: ", gamegrid.scoreMatrix())
-
-        gamegrid.agent.setScore(gamegrid.scoreMatrix())
-        gamegrid.agent.pikPakGame()
-
-        time.sleep(2)
-
-
-main()
