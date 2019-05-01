@@ -23,25 +23,31 @@ class Agent:
     def promptAgent(self, currentMatrix):
         print("__init__ not defined for promptAgent method in abstract Agent")
 
+    # Retrieve the current game board
     def getCurrMat(self):
         return self.myGrid.matrix
 
+    # Simulate a key press
     def pressKey(self, key):
         time.sleep(self.waitTime)
         self.myGrid.key_down_str(key)
 
+    # Check if the desired move is a valid move that cam be made
     def checkMoveValid(self, move):
         _, done = self.myGrid.getCommand(move)(self.getCurrMat())
         return done
 
+    # Increment the move ID
     def incrementMoveID(self):
         self._moveID += 1
 
+    # Add a move to the move record
     def appendMove(self, move):
         self._matRecord.append(self.convMat1x16(self.getCurrMat()))
         self._moveRecord.append(self.convDirToDirCode(move))
         self.incrementMoveID()
 
+    # Method packages the game data with pickle
     def pikPakGame(self):
         xAll = self._matRecord
         yAll = self._moveRecord
@@ -49,12 +55,14 @@ class Agent:
         # print(xAll)
         # print(yAll)
         # print(self._score)
-        with open('training_epochs/train.pickle', 'wb') as f:
+        with open('train.pickle', 'wb') as f:
             pickle.dump((xAll, yAll, self._score), f)
 
+    # Set the game score (to be included in pickle file)
     def setScore(self, score):
         self._score = score
 
+    # Convert a 4x4 board matrix into a 1X16 matrix
     def convMat1x16(self, mat):
         outMat1x16 = []
         for i in range(4):
@@ -64,6 +72,7 @@ class Agent:
         # Weird thing, need to return the single list in a list of lists
         return outMat1x16
 
+    # Convert a direction code (0 -3) to a key direction
     def convDirCodeToDir(self, code):
         if code == c.UP_CODE:
             return c.KEY_UP_AGENT
@@ -176,7 +185,7 @@ class DNNAgent(Agent):
 
         # Init neural net
         # Number and size of hidden layers
-        self.size = [32]
+        self.size = [32, 16]
         # Using "relu" activation function, a standard in the industry
         self.mlp = MLPClassifier(hidden_layer_sizes=self.size, activation='relu')
         self.xTrain, self.yTrain = self.getTrains(trainName)
@@ -213,6 +222,6 @@ class DNNAgent(Agent):
             with open(trainName, 'rb') as f:
                 (xTrain, yTrain, score) = pickle.load(f)
             # print("Have Train Data")
-            # print(xTrain)
-            # print(yTrain)
+            print(xTrain)
+            print(yTrain)
             return (xTrain, yTrain)
