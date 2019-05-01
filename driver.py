@@ -7,11 +7,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main():
-    # runner = Runner(2, 100, 0)
-    # runner = TrainingWholeCountRunner(10, 100, 4, 20)
+    # runner = Runner(1, 1, 1)
+    runner = TrainingWholeCountRunner(10, 100, 4, 15)
     # runner = TrainingPartialCountRunner(10, 100, 4, 10)
-    #runner = TrainWholePercentRunner(10, 100, 4, .01)
-    runner = TrainPartialPercentRunner(10, 100, 4, .01)
+    # runner = TrainWholePercentRunner(2, 20, 4, .1)
+    # runner = TrainPartialPercentRunner(10, 100, 4, .01)
     runner.runTraining()
 
     # runTraining(25, 100, .05)
@@ -40,7 +40,7 @@ class Runner:
         elif (agentCode == 3):
             self._agent = ManualAgent(None, waitTime=0)
         elif (agentCode == 4):
-            self._agent = DNNAgent(None, waitTime=0, trainName="random_train.pickle")
+            self._agent = DNNAgent(None, waitTime=0, trainName="ULRD_train.pickle")
 
         self._agent.setGameGrid(self._gamegrid)
         self._gamegrid.setAgent(self._agent)
@@ -67,6 +67,7 @@ class Runner:
 
                 # The current code running AI games needs to know the current epochNum for encoding filename
                 (boards, moves, score) = self._agent.getGameRecord()
+#                 self._agent.pikPakGame()
                 self._trainingRecord.append((epochNum, itterNum, boards, moves, score))
         return self._trainingRecord
 
@@ -95,8 +96,12 @@ class TrainWholePercentRunner(Runner):
                 self._trainingRecord.append((epochNum, itterNum, boards, moves, score))
 
             if (self._agentCode == 4):
+                print(self._trainingRecord)
                 bestGames = getNPercentageBestGames(self._percent, self._trainingRecord.copy())
+                print("BEST:", bestGames)
+                print("Retrain agent")
                 self._agent = DNNAgent(None, waitTime=0, trainData=bestGames)
+                print("Done retraining")
         with open(('train{}.pickle'.format(randint(10000, 99999))), 'wb') as f:
             pickle.dump(self._trainingRecord, f)
             print("Train data stored in {}".format(f))
@@ -217,6 +222,7 @@ def getNPercentageBestGames(nPerc, gameData):
             if currGame[4] >= maxVal:
                 maxVal = currGame[4]
                 maxGameInd = j
+        # print("Next top score: ", gameData[maxGameInd][4])
         bestGames.append(gameData[maxGameInd])
         _ = gameData.pop(maxGameInd)
     # print(bestGames)
@@ -233,8 +239,10 @@ def getNBestGames(n, gameData):
             if currGame[4] >= maxVal:
                 maxVal = currGame[4]
                 maxGameInd = j
+        # print("Next top score: ", gameData[maxGameInd][4])
         bestGames.append(gameData[maxGameInd])
         _ = gameData.pop(maxGameInd)
+
     # print(bestGames)
     return bestGames
 

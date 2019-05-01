@@ -3,6 +3,7 @@ import constants as c
 import time
 from sklearn.neural_network import MLPClassifier
 import pickle
+import numpy as np
 
 # Pickle for serielizing data and re-adding
 # Save and plot average fittness over generations? (Get an A)
@@ -53,6 +54,7 @@ class Agent:
 
     # Method packages the game data with pickle
     def pikPakGame(self):
+        print("PIKPAK")
         xAll = self._matRecord
         yAll = self._moveRecord
         # print("write data")
@@ -195,11 +197,13 @@ class DNNAgent(Agent):
 
         # Init neural net
         # Number and size of hidden layers
-        self.size = [32, 8]
+        self.size = [32]
         # Using "relu" activation function, a standard in the industry
-        self.mlp = MLPClassifier(hidden_layer_sizes=self.size, activation='relu')
+        # self.mlp = MLPClassifier(hidden_layer_sizes=self.size, activation='relu', max_iter=700)
+        self.mlp = MLPClassifier(hidden_layer_sizes=self.size, activation='relu', max_iter=200)
         if trainName != None and trainData == None:
             self.xTrain, self.yTrain = self.getTrainsFromFile(trainName)
+            print("Fitting Model")
             self.fitModel(self.xTrain, self.yTrain)
         elif trainName == None and trainData != None:
             self.xTrain, self.yTrain = self.getTrainsFromDataSet(trainData)
@@ -215,15 +219,36 @@ class DNNAgent(Agent):
         inMat = [self.convMat1x16(self.getCurrMat())]
         # Input matrix into mlp
         pred = self.mlp.predict(inMat)
-        # print(pred)
+        probs = np.asarray(self.mlp.predict_proba(inMat))
+        opts = np.asarray(self.mlp.classes_)
+        predInd = np.where(opts==pred)[0][0]
+
+        # print("Opts before:", opts)
+        opts = np.delete(opts, predInd)
+        # print("Opts after:", opts)
+
+        # print("Probs before:", probs)
+        probs = np.delete(probs, predInd)
+        # print("Probs after:", probs)
+
         choice = self.convDirCodeToDir(pred)
-        # print(choice)
-
-        while not self.checkMoveValid(choice):
+        while not self.checkMoveValid(choice) and not probs.size == 0 and not opts.size == 0:
             # print("Move ", choice, " was not valid. Getting new choice")
-            choice = random.choices([c.KEY_UP_AGENT, c.KEY_DOWN_AGENT, c.KEY_LEFT_AGENT, c.KEY_RIGHT_AGENT], weights=[0.25, 0.25, 0.25, 0.25])[0]
+            maxProb = np.argmax(probs)
+            # print("Max Prob: ", maxProb)
+            pred = opts[maxProb]
+            choice = self.convDirCodeToDir(pred)
+            # print("New Choice: ", choice)
 
-        # print(choice)
+            # print("Opts before:", opts)
+            opts = np.delete(opts, maxProb)
+            # print("Opts after:", opts)
+
+            # print("Probs before:", probs)
+            probs = np.delete(probs, maxProb)
+            # print("Probs after:", probs)
+
+        # print("Choice Confirmed: ", choice)
         self.appendMove(choice)
         self.pressKey(choice)
 
@@ -234,6 +259,15 @@ class DNNAgent(Agent):
             with open(trainName, 'rb') as f:
                 (xTrain, yTrain, score) = pickle.load(f)
             # print("Have Train Data")
+            xTrain.append([0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+            xTrain.append([0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+            xTrain.append([0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+            xTrain.append([0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+            yTrain.append(0)
+            yTrain.append(1)
+            yTrain.append(2)
+            yTrain.append(3)
             # print(xTrain)
             # print(yTrain)
             return (xTrain, yTrain)
@@ -244,12 +278,20 @@ class DNNAgent(Agent):
         if trainData != None:
             # xTrain, yTrain = []
             # Data is in the form: (epochNum, itterNum, boards, moves, score)
-            xTrain = []
-            yTrain = []
+            xTrain = [[0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+            yTrain = [0, 1, 2, 3]
+            # xTrain = []
+            # yTrain = []
+            # print(trainData)
+            # print(len(trainData))
             for i in range(0, len(trainData)):
                 (_, _, xArr, yArr, _) = trainData[i]
-                xTrain.append(xArr[0])
-                yTrain.append(yArr[0])
+                for xData in xArr:
+                    xTrain.append(xData)
+                    # print("Putting X: ", xData)
+                for yData in yArr:
+                    yTrain.append(yData)
+                    # print("Putting Y: ", yData)
             # print("Have Train Data")
             # print(xTrain)
             # print(yTrain)
