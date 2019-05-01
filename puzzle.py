@@ -3,7 +3,6 @@ from tkinter import Frame, Label, CENTER
 
 import logic
 import constants as c
-
 from agent import *
 
 
@@ -12,10 +11,7 @@ class GameGrid(Frame):
         Frame.__init__(self)
 
         # self.agent = RandomAgent(self, waitTime=0.1)
-        # self.agent = PatternAgentULRD(self, waitTime=0.0)
-        # self.agent = PatternAgentLURD(self, waitTime=0.1)
-        self.agent = ManualAgent(self, waitTime=0.1)
-        # self.agent = DNNAgent(self, waitTime=0.1, trainName="training_epochs/train.pickle")
+
 
         self.grid()
         self.master.title('2048')
@@ -31,7 +27,6 @@ class GameGrid(Frame):
         self.init_grid()
         self.init_matrix()
         self.update_grid_cells()
-        # self.hide()
 
     def getCommand(self, str):
         return self.commands[repr(str)]
@@ -87,7 +82,7 @@ class GameGrid(Frame):
         if key == c.KEY_BACK and len(self.history_matrixs) > 1:
             self.matrix = self.history_matrixs.pop()
             self.update_grid_cells()
-            print('back on step total step:', len(self.history_matrixs))
+            # print('back on step total step:', len(self.history_matrixs))
         elif key in self.commands:
             #AA: Perform key command
             self.matrix, done = self.commands[repr(event.char)](self.matrix)
@@ -162,3 +157,8 @@ class GameGrid(Frame):
             for j in range(4):
                 sum += self.matrix[i][j]
         return sum
+
+    def setAgent(self, _agent):
+        self.agent = _agent
+
+
