@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 def main():
     # runTraining(25, 100, .05)
     # wederunTraining(25, 1000, .05)
-    runTraining(25, 100, .01, 4)
+    runTraining_UsePercentageAll(25, 10, .01, 4)
     # runTraining(10, 1000, 10, gamegrid, PatternAgentULRD(gamegrid, waitTime=0))
     # runTraining(10, 1000, 10, gamegrid, PatternAgentLURD(gamegrid, waitTime=0))
     # runTraining(10, 1000, 10, gamegrid, ManualAgent(gamegrid, waitTime=0))
@@ -18,27 +18,30 @@ def main():
 
 # method to run epochs and iterations to train model
 # agent codes: 0 = random, 1 = ULRD, 2 = LURD, 3 = Manual, 4 = DNN
-def runTraining(_numEpochs, _numItterations, _trainingSetPercent, agentCode):
+# This method will run training and use a percentage of all the games as the training set for the next model
+def runTraining_UsePercentageAll(_numEpochs, _numItterations, _trainingSetPercent, agentCode):
     trainingRecord = []
+    gamegrid = GameGrid()
 
-    agent = None
-    if (agentCode = 4):
-        agent = RandomAgent(gamegrid, waitTime=0)
+    agent = RandomAgent(gamegrid, waitTime=0.001)
     for epochNum in range(0, _numEpochs):
         for itterNum in range(0, _numItterations):
             gamegrid = GameGrid()
             gamegrid.hide()
-
-            if (agentCode = 0):
-                agent = RandomAgent(gamegrid, waitTime=0)
-            elif (agentCode = 1):
-                agent = PatternAgentULRD(gamegrid, waitTime=0)
-            elif (agentCode = 2):
-                # agent = PatternAgentLURD(gamegrid, waitTime=0)
-            elif (agentCode = 3):
-                # agent = ManualAgent(gamegrid, waitTime=0)
-
             gamegrid.setAgent(agent)
+
+            if (agentCode == 0):
+                agent = RandomAgent(gamegrid, waitTime=0)
+            elif (agentCode == 1):
+                agent = PatternAgentULRD(gamegrid, waitTime=0)
+            elif (agentCode == 2):
+                agent = PatternAgentLURD(gamegrid, waitTime=0)
+            elif (agentCode == 3):
+                agent = ManualAgent(gamegrid, waitTime=0)
+            else:
+                print("USING RANDOM AGENT########################################")
+
+
 
             print("Epoch: ", epochNum, " Iteration: ", itterNum)
             gamegrid.mainloop()
@@ -50,7 +53,7 @@ def runTraining(_numEpochs, _numItterations, _trainingSetPercent, agentCode):
             # The current code running AI games needs to know the current epochNum for encoding filename
             (boards, moves, score) = agent.getGameRecord()
             trainingRecord.append((epochNum, itterNum, boards, moves, score))
-        elif (agentCode = 4):
+        if (agentCode == 4):
             bestGames = getNPercentageBestGames(_trainingSetPercent, trainingRecord.copy())
             agent = DNNAgent(gamegrid, waitTime=0, trainData=bestGames)
 
@@ -67,6 +70,22 @@ def runTraining(_numEpochs, _numItterations, _trainingSetPercent, agentCode):
 def getNPercentageBestGames(nPerc, gameData):
     bestGames = []
     n = int(len(gameData) * nPerc + 1)
+    for i in range(0, n):
+        maxVal = float("-inf")
+        maxGameInd = -1
+        for j in range(0, len(gameData)):
+            currGame = gameData[j]
+            if currGame[4] >= maxVal:
+                maxVal = currGame[4]
+                maxGameInd = j
+        bestGames.append(gameData[maxGameInd])
+        _ = gameData.pop(maxGameInd)
+    # print(bestGames)
+    return bestGames
+
+# Data is in the form: (epochNum, itterNum, boards, moves, score)
+def getNBestGames(n, gameData):
+    bestGames = []
     for i in range(0, n):
         maxVal = float("-inf")
         maxGameInd = -1
