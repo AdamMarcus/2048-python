@@ -19,6 +19,9 @@ class Agent:
         self._moveRecord = []
         self._score = None
 
+    def setGameGrid(self, gameGrid):
+        self.myGrid = gameGrid
+
 
     # This function is to be populated with code for the agent to respond to a new board being given after an update and will trigger a command.
     def promptAgent(self, currentMatrix):

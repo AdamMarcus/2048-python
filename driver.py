@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 def main():
     # runTraining(25, 100, .05)
     # wederunTraining(25, 1000, .05)
-    runTraining_UsePercentageAll(25, 10, .01, 4)
+    runTraining(25, 100, .01, 4)
     # runTraining(10, 1000, 10, gamegrid, PatternAgentULRD(gamegrid, waitTime=0))
     # runTraining(10, 1000, 10, gamegrid, PatternAgentLURD(gamegrid, waitTime=0))
     # runTraining(10, 1000, 10, gamegrid, ManualAgent(gamegrid, waitTime=0))
@@ -18,30 +18,26 @@ def main():
 
 # method to run epochs and iterations to train model
 # agent codes: 0 = random, 1 = ULRD, 2 = LURD, 3 = Manual, 4 = DNN
-# This method will run training and use a percentage of all the games as the training set for the next model
-def runTraining_UsePercentageAll(_numEpochs, _numItterations, _trainingSetPercent, agentCode):
+def runTraining(_numEpochs, _numItterations, _trainingSetPercent, agentCode):
     trainingRecord = []
-    gamegrid = GameGrid()
 
-    agent = RandomAgent(gamegrid, waitTime=0.001)
+    agent = RandomAgent(None, waitTime=0)
+    if (agentCode == 0):
+        agent = RandomAgent(None, waitTime=0)
+    elif (agentCode == 1):
+        agent = PatternAgentULRD(None, waitTime=0)
+    elif (agentCode == 2):
+        agent = PatternAgentLURD(None, waitTime=0)
+    elif (agentCode == 3):
+        agent = ManualAgent(None, waitTime=0)
+
     for epochNum in range(0, _numEpochs):
         for itterNum in range(0, _numItterations):
             gamegrid = GameGrid()
             gamegrid.hide()
+
+            agent.setGameGrid(gamegrid)
             gamegrid.setAgent(agent)
-
-            if (agentCode == 0):
-                agent = RandomAgent(gamegrid, waitTime=0)
-            elif (agentCode == 1):
-                agent = PatternAgentULRD(gamegrid, waitTime=0)
-            elif (agentCode == 2):
-                agent = PatternAgentLURD(gamegrid, waitTime=0)
-            elif (agentCode == 3):
-                agent = ManualAgent(gamegrid, waitTime=0)
-            else:
-                print("USING RANDOM AGENT########################################")
-
-
 
             print("Epoch: ", epochNum, " Iteration: ", itterNum)
             gamegrid.mainloop()
