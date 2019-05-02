@@ -48,9 +48,10 @@ class Agent:
 
     # Add a move to the move record
     def appendMove(self, move):
-        self._matRecord.append(self.convMat1x16(self.getCurrMat()))
-        self._moveRecord.append(self.convDirToDirCode(move))
-        self.incrementMoveID()
+        if (self.checkMoveValid(move)):
+            self._matRecord.append(self.convMat1x16(self.getCurrMat()))
+            self._moveRecord.append(self.convDirToDirCode(move))
+            self.incrementMoveID()
 
     # Method packages the game data with pickle
     def pikPakGame(self):
@@ -72,6 +73,7 @@ class Agent:
         return self._score
 
     def getGameRecord(self):
+        print(self._moveID)
         return (self._matRecord, self._moveRecord, self._score)
 
     # Convert a 4x4 board matrix into a 1X16 matrix
@@ -210,11 +212,11 @@ class DNNAgent(Agent):
             self.xTrain, self.yTrain = self.getTrainsFromDataSet(trainData)
             self.fitModel(self.xTrain, self.yTrain)
         elif trainDataPickle != None:
-            self.xTrain, self.yTrain = self.getTrainsFromPickleData(trainDataPickle, 1)
+            self.xTrain, self.yTrain = self.getTrainsFromPickleData(trainDataPickle, 20)
             self.fitModel(self.xTrain, self.yTrain)
             #########################
-            # with open('ULRD_trained_model_1_game_layers_16.pickle', 'wb') as f:
-            #     pickle.dump(self.mlp, f)
+            with open('ULRD_trained_model_20_game_layers_16.pickle', 'wb') as f:
+                pickle.dump(self.mlp, f)
             #########################
         else:
             print("Specified both train data file and data set, please only pass one of the two")
@@ -259,8 +261,7 @@ class DNNAgent(Agent):
             # print("Probs after:", probs)
 
         # print("Choice Confirmed: ", choice)
-        if (self.checkMoveValid(choice)):
-            self.appendMove(choice)
+        self.appendMove(choice)
         self.pressKey(choice)
 
 
@@ -292,14 +293,17 @@ class DNNAgent(Agent):
             with open(trainName, 'rb') as f:
                 dataFromPickle = pickle.load(f)
             # print("Have Train Data")
-            xTrain = [[0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+            xTrain = [[2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2], [2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2], [2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2], [2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2]]
             yTrain = [0, 1, 2, 3]
 
             limit = min(limit, len(dataFromPickle))
+            # limit = min(1, len(dataFromPickle))
             print("Training on ", limit, " games")
             for i in range(0, limit):
                 (_, _, xArr, yArr, score) = dataFromPickle[i]
                 print("Game has ", len(yArr), " moves to achive score ", score)
+                # print(xArr)
+                print(yArr)
                 for xData in xArr:
                     xTrain.append(xData)
                     # print("Putting X: ", xData)

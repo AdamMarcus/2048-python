@@ -158,7 +158,10 @@ class GameGrid(Frame):
                 sum += self.matrix[i][j] ** 2
         return sum
 
-    def setAgent(self, _agent):
-        self.agent = _agent
+    def setAgent(self, agent):
+        self.agent = agent
+
+    def getAgent(self):
+        return self.agent
 
 
