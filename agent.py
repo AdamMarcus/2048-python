@@ -192,15 +192,16 @@ class ManualAgent(Agent):
 
 
 class DNNAgent(Agent):
-    def __init__(self, gGrid, waitTime=0.1, gameSessionFile=None, trainName=None, trainData=None):
+    def __init__(self, gGrid, waitTime=0.1, gameSessionFile=None, trainName=None, trainData=None, trainDataPickle=None):
         super().__init__(gGrid, waitTime=waitTime, gameSessionFile=gameSessionFile)
 
         # Init neural net
         # Number and size of hidden layers
-        self.size = [32]
+        self.size = [16]
         # Using "relu" activation function, a standard in the industry
         # self.mlp = MLPClassifier(hidden_layer_sizes=self.size, activation='relu', max_iter=700)
-        self.mlp = MLPClassifier(hidden_layer_sizes=self.size, activation='relu', max_iter=200)
+        self.mlp = MLPClassifier(hidden_layer_sizes=self.size, activation='relu', max_iter=700)
+        print("Start Training")
         if trainName != None and trainData == None:
             self.xTrain, self.yTrain = self.getTrainsFromFile(trainName)
             print("Fitting Model")
@@ -208,8 +209,17 @@ class DNNAgent(Agent):
         elif trainName == None and trainData != None:
             self.xTrain, self.yTrain = self.getTrainsFromDataSet(trainData)
             self.fitModel(self.xTrain, self.yTrain)
+        elif trainDataPickle != None:
+            self.xTrain, self.yTrain = self.getTrainsFromPickleData(trainDataPickle, 1)
+            self.fitModel(self.xTrain, self.yTrain)
+            #########################
+            # with open('ULRD_trained_model_1_game_layers_16.pickle', 'wb') as f:
+            #     pickle.dump(self.mlp, f)
+            #########################
         else:
             print("Specified both train data file and data set, please only pass one of the two")
+
+        print("Training Finished")
 
     def fitModel(self, xTrain, yTrain):
         self.mlp.fit(xTrain, yTrain)
@@ -249,7 +259,8 @@ class DNNAgent(Agent):
             # print("Probs after:", probs)
 
         # print("Choice Confirmed: ", choice)
-        self.appendMove(choice)
+        if (self.checkMoveValid(choice)):
+            self.appendMove(choice)
         self.pressKey(choice)
 
 
@@ -268,6 +279,34 @@ class DNNAgent(Agent):
             yTrain.append(1)
             yTrain.append(2)
             yTrain.append(3)
+            # print(xTrain)
+            # print(yTrain)
+            return (xTrain, yTrain)
+        else:
+            print("No train file")
+
+    # Data is in the form: (epochNum, itterNum, boards, moves, score)
+    def getTrainsFromPickleData(self, trainName, limit):
+        if trainName != None:
+            # xTrain, yTrain = []
+            with open(trainName, 'rb') as f:
+                dataFromPickle = pickle.load(f)
+            # print("Have Train Data")
+            xTrain = [[0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+            yTrain = [0, 1, 2, 3]
+
+            limit = min(limit, len(dataFromPickle))
+            print("Training on ", limit, " games")
+            for i in range(0, limit):
+                (_, _, xArr, yArr, score) = dataFromPickle[i]
+                print("Game has ", len(yArr), " moves to achive score ", score)
+                for xData in xArr:
+                    xTrain.append(xData)
+                    # print("Putting X: ", xData)
+                for yData in yArr:
+                    yTrain.append(yData)
+                    # print("Putting Y: ", yData)
+            # print("Have Train Data")
             # print(xTrain)
             # print(yTrain)
             return (xTrain, yTrain)
