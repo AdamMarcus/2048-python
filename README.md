@@ -1,8 +1,11 @@
 Running the AI agents:
+To run this code, you must have matplotlib and sklearn
 
 Must install pynput
     
     $ pip install pynput
+    $ pip install matplotlib
+    $ pip install sklearn
 
 2048-python
 ===========

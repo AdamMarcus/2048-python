@@ -1,5 +1,4 @@
 from puzzle import GameGrid
-import random
 from agent import *
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D

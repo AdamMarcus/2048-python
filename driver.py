@@ -3,20 +3,20 @@ from agent import *
 from random import randint
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 def main():
-    # runner = TrainingPartialCountRunner(20, 50, 4, 2)
-    # runner = TrainingWholeCountRunner(100, 20, 1, 20)
-    # runner = TrainingPartialCountRunner(10, 100, 4, 20)
-    # runner = TrainingPartialCountRunner(50, 50, 4, 5)
-    # runner = TrainWholePercentRunner(1, 2, 4, .01)
+    # Run itterative learning/training using a defined number of games output from the last epoch
+    # runner = TrainingPartialCountRunner(5, 5, 4, 5)
+
+    # Run itterative learning/training using a defined number of games output from all epochs
+    # Had a bug here right before turning in! This one doesnt work now
+    # runner = TrainingWholeCountRunner(5, 5, 4, 4)
+
+    # Run itterative learning/training using an upper percentile of games output from the last epoch
     # runner = TrainPartialPercentRunner(10, 100, 4, .01)
-    # runner = TrainPartialPercentRunner(10, 100, 5, .01)
 
-    runner = TrainingPartialCountRunner(50, 50, 4, 5)
-    runner = TrainingWholeCountRunner(50, 50, 4, 20)
-
+    # Run itterative learning/training using an upper percentile of games output from all epochs
+    # runner = TrainWholePercentRunner(10, 10, 4, .01)
     runner.runTraining()
 
 # This is an abstract implementation of a class to run training. This class handles how many epochs and itterations to run, and how to re-train.
@@ -118,29 +118,27 @@ class TrainPartialPercentRunner(Runner):
 
 
     def runTraining(self):
+        currData = None
         for epochNum in range(0, self._numEpochs):
             epochTrainSet = []
+            self.createAgent(trainData=currData)
             for itterNum in range(0, self._numItterations):
                 self.refreshGameGrid()
-                self.createAgent()
 
                 print("Epoch: ", epochNum, " Iteration: ", itterNum)
                 self._gamegrid.mainloop()
 
                 # print(gamegrid.matrix)
                 print("Score: ", self._gamegrid.scoreMatrix())
-                self._agent.setScore(self._gamegrid.scoreMatrix())
+                self._gamegrid.getAgent().setScore(self._gamegrid.scoreMatrix())
 
                 # The current code running AI games needs to know the current epochNum for encoding filename
                 (boards, moves, score) = self._gamegrid.getAgent().getGameRecord()
                 self._trainingRecord.append((epochNum, itterNum, boards, moves, score))
                 epochTrainSet.append((epochNum, itterNum, boards, moves, score))
-        with open(('train{}.pickle'.format(randint(10000, 99999))), 'wb') as f:
-            pickle.dump(self._trainingRecord, f)
-            print("Train data stored in {}".format(f))
 
+                currData = getNPercentageBestGames(self._percent, epochTrainSet)
         plotTrainingRecord(self._trainingRecord)
-
         return self._trainingRecord
 
 # Runner implementation that will use a fixed number of games stored in _trainingRecord to train the next epoch
@@ -168,17 +166,6 @@ class TrainingWholeCountRunner(Runner):
                 self._trainingRecord.append((epochNum, itterNum, boards, moves, score))
 
                 currData = getNBestGames(self._trainingCount, self._trainingRecord)
-
-        #########################
-        with open('RAND_train_100_20_20.pickle', 'wb') as f:
-            bestGames = getNBestGames(self._trainingCount, self._trainingRecord.copy())
-            pickle.dump(bestGames, f)
-            print("Train data stored in {}".format(f))
-        #########################
-        # with open(('train{}.pickle'.format(randint(10000, 99999))), 'wb') as f:
-        #     pickle.dump(self._trainingRecord, f)
-        #     print("Train data stored in {}".format(f))
-
         plotTrainingRecord(self._trainingRecord)
 
         return self._trainingRecord

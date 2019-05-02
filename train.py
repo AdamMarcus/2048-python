@@ -1,8 +1,5 @@
 from puzzle import GameGrid
-import random
 from agent import *
-import matplotlib.pyplot as plt
-import numpy as np
 
 def main():
     gamegrid = GameGrid()

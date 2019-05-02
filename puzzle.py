@@ -2,7 +2,6 @@ import random
 from tkinter import Frame, Label, CENTER
 
 import logic
-import constants as c
 from agent import *
 
 
