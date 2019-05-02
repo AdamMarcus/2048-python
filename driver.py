@@ -2,14 +2,14 @@ from puzzle import GameGrid
 from agent import *
 from random import randint
 
-# import matplotlib.pyplot as plt; plt.rcdefaults()
-# import numpy as np
+import matplotlib.pyplot as plt
+import numpy as np
 
 def main():
     # runner = TrainingPartialCountRunner(20, 50, 4, 2)
-    runner = TrainingWholeCountRunner(1, 2000, 1, 20)
+    runner = TrainingWholeCountRunner(100, 20, 1, 20)
     # runner = TrainingPartialCountRunner(10, 100, 4, 20)
-    # runner = TrainWholePercentRunner(20, 20, 4, 1)
+    # runner = TrainingWholeCountRunner(20, 20, 4, 5)
     # runner = TrainWholePercentRunner(1, 2, 4, .01)
     # runner = TrainPartialPercentRunner(10, 100, 4, .01)
 
@@ -50,7 +50,7 @@ class Runner:
 
     def refreshGameGrid(self):
         self._gamegrid = GameGrid()
-        # self._gamegrid.hide()
+        self._gamegrid.hide()
         self._gamegrid.setAgent(self._agent)
         self._agent.setGameGrid(self._gamegrid)
 
@@ -159,6 +159,7 @@ class TrainingWholeCountRunner(Runner):
         for epochNum in range(0, self._numEpochs):
             for itterNum in range(0, self._numItterations):
                 self.refreshGameGrid()
+                self.createAgent
 
                 print("Epoch: ", epochNum, " Iteration: ", itterNum)
                 self._gamegrid.mainloop()
@@ -171,16 +172,13 @@ class TrainingWholeCountRunner(Runner):
                 (boards, moves, score) = self._agent.getGameRecord()
                 self._trainingRecord.append((epochNum, itterNum, boards, moves, score))
 
-            #########################
-            with open('ULRD_train_2000_20.pickle', 'wb') as f:
-                bestGames = getNBestGames(self._trainingCount, self._trainingRecord.copy())
-                pickle.dump(bestGames, f)
-                print("Train data stored in {}".format(f))
+        #########################
+        with open('RAND_train_100_20_20.pickle', 'wb') as f:
+            bestGames = getNBestGames(self._trainingCount, self._trainingRecord.copy())
 
-            with open('ULRD_train_2000.pickle', 'wb') as f:
-                pickle.dump(self._trainingRecord, f)
-                print("Train data stored in {}".format(f))
-            #########################
+            pickle.dump(bestGames, f)
+            print("Train data stored in {}".format(f))
+        #########################
             if (self._agentCode == 4):
                 bestGames = getNBestGames(self._trainingCount, self._trainingRecord.copy())
                 self._agent = DNNAgent(None, waitTime=0, trainData=bestGames)
@@ -263,14 +261,13 @@ def getNBestGames(n, gameData):
 
 # Data is in the form: (epochNum, itterNum, boards, moves, score)
 def plotTrainingRecord(data):
-    # fig, ax = plt.subplots()
-    # x = []
-    # y = []
-    # for i in range(0, len(data)):
-    #     x.append(i)
-    #     y.append(data[i][4])
-    # plt.bar(x, y)
-    # plt.show()
-    print("no")
+    fig, ax = plt.subplots()
+    x = []
+    y = []
+    for i in range(0, len(data)):
+        x.append(i)
+        y.append(data[i][4])
+    plt.bar(x, y)
+    plt.show()
 
 main()

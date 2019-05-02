@@ -22,6 +22,7 @@ def main():
             gamegrid.mainloop()
             agentScoreDict[agentKey].append(sumScoreMatrix(gamegrid.matrix))
             print(agentScoreDict[agentKey])
+            agent.reset()
 
     plotTrainingRecord(gameIDs, agentDict, agentDescription, agentScoreDict, agentColors)
 
