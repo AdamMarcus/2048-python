@@ -20,6 +20,12 @@ class Agent:
         self._moveRecord = []
         self._score = None
 
+    def reset(self):
+        self._moveID = 0
+        self._matRecord = []
+        self._moveRecord = []
+        self._score = None
+
     def setGameGrid(self, gameGrid):
         self.myGrid = gameGrid
 

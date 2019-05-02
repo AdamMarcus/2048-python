@@ -2,19 +2,16 @@ from puzzle import GameGrid
 from agent import *
 from random import randint
 
-# import matplotlib.pyplot as plt; plt.rcdefaults()
-# import numpy as np
+import matplotlib.pyplot as plt
+import numpy as np
 
 def main():
     # runner = TrainingPartialCountRunner(20, 50, 4, 2)
-
-    # runner = TrainingWholeCountRunner(1, 20, 1, 20)
-
+<<<<<<< HEAD
+    runner = TrainingWholeCountRunner(100, 20, 1, 20)
     # runner = TrainingPartialCountRunner(10, 100, 4, 20)
-    # runner = TrainWholePercentRunner(20, 20, 4, 1)
-
-    runner = TrainWholePercentRunner(1, 1, 4, .01)
-
+    # runner = TrainingWholeCountRunner(20, 20, 4, 5)
+    # runner = TrainWholePercentRunner(1, 2, 4, .01)
     # runner = TrainPartialPercentRunner(10, 100, 4, .01)
 
     runner.runTraining()
@@ -39,7 +36,7 @@ class Runner:
 
         self._trainingRecord = []
 
-    def createAgent(self):
+    def createAgent(self, gameSessionFile=None, trainName=None, trainData=None, trainDataPickle=None):
         if (self._agentCode == 0):
             self._gamegrid.setAgent(RandomAgent(None, waitTime=0))
         elif (self._agentCode == 1):
@@ -49,13 +46,16 @@ class Runner:
         elif (self._agentCode == 3):
             self._gamegrid.setAgent(ManualAgent(None, waitTime=0))
         elif (self._agentCode == 4):
-            self._gamegrid.setAgent(DNNAgent(None, waitTime=0, trainDataPickle="ULRD_train_2000_20.pickle"))
+            self._gamegrid.setAgent(DNNAgent(None, waitTime=0, gameSessionFile=gameSessionFile, trainName=trainName, trainData=trainData, trainDataPickle=trainDataPickle))
 
         self._gamegrid.getAgent().setGameGrid(self._gamegrid)
 
     def refreshGameGrid(self):
         self._gamegrid = GameGrid()
         self._gamegrid.hide()
+        self._gamegrid.setAgent(self._agent)
+        self._agent.setGameGrid(self._gamegrid)
+
 
     def runTraining(self):
         for epochNum in range(0, self._numEpochs):
@@ -156,10 +156,11 @@ class TrainingWholeCountRunner(Runner):
         self._trainingCount = trainingCount
 
     def runTraining(self):
+        currData = None
         for epochNum in range(0, self._numEpochs):
             for itterNum in range(0, self._numItterations):
                 self.refreshGameGrid()
-                self.createAgent()
+                self.createAgent(trainData=currData)
 
                 print("Epoch: ", epochNum, " Iteration: ", itterNum)
                 self._gamegrid.mainloop()
@@ -172,19 +173,17 @@ class TrainingWholeCountRunner(Runner):
                 (boards, moves, score) = self._gamegrid.getAgent().getGameRecord()
                 self._trainingRecord.append((epochNum, itterNum, boards, moves, score))
 
-            #########################
-            with open('ULRD_train_2000_20.pickle', 'wb') as f:
-                bestGames = getNBestGames(self._trainingCount, self._trainingRecord.copy())
-                pickle.dump(bestGames, f)
-                print("Train data stored in {}".format(f))
+                currData = getNBestGames(self._trainingCount, self._trainingRecord)
 
-            with open('ULRD_train_2000.pickle', 'wb') as f:
-                pickle.dump(self._trainingRecord, f)
-                print("Train data stored in {}".format(f))
-            #########################
-        with open(('train{}.pickle'.format(randint(10000, 99999))), 'wb') as f:
-            pickle.dump(self._trainingRecord, f)
+        #########################
+        with open('RAND_train_100_20_20.pickle', 'wb') as f:
+            bestGames = getNBestGames(self._trainingCount, self._trainingRecord.copy())
+            pickle.dump(bestGames, f)
             print("Train data stored in {}".format(f))
+        #########################
+        # with open(('train{}.pickle'.format(randint(10000, 99999))), 'wb') as f:
+        #     pickle.dump(self._trainingRecord, f)
+        #     print("Train data stored in {}".format(f))
 
         plotTrainingRecord(self._trainingRecord)
 
@@ -197,9 +196,12 @@ class TrainingPartialCountRunner(Runner):
         self._trainingCount = trainingCount
 
     def runTraining(self):
+        currData = None
         for epochNum in range(0, self._numEpochs):
+            epochTrainSet = []
             for itterNum in range(0, self._numItterations):
                 self.refreshGameGrid()
+                self.createAgent(trainData=currData)
 
                 print("Epoch: ", epochNum, " Iteration: ", itterNum)
                 self._gamegrid.mainloop()
@@ -211,10 +213,10 @@ class TrainingPartialCountRunner(Runner):
                 # The current code running AI games needs to know the current epochNum for encoding filename
                 (boards, moves, score) = self._agent.getGameRecord()
                 self._trainingRecord.append((epochNum, itterNum, boards, moves, score))
+                epochTrainSet.append((epochNum, itterNum, boards, moves, score))
 
-            if (self._agentCode == 4):
-                bestGames = getNBestGames(self._trainingCount, self._trainingRecord.copy())
-                self._agent = DNNAgent(None, waitTime=0, trainData=bestGames)
+            currData = getNBestGames(self._trainingCount, epochTrainSet.copy())
+
         with open(('train{}.pickle'.format(randint(10000, 99999))), 'wb') as f:
             pickle.dump(self._trainingRecord, f)
             print("Train data stored in {}".format(f))
@@ -261,14 +263,13 @@ def getNBestGames(n, gameData):
 
 # Data is in the form: (epochNum, itterNum, boards, moves, score)
 def plotTrainingRecord(data):
-    # fig, ax = plt.subplots()
-    # x = []
-    # y = []
-    # for i in range(0, len(data)):
-    #     x.append(i)
-    #     y.append(data[i][4])
-    # plt.bar(x, y)
-    # plt.show()
-    print("no")
+    fig, ax = plt.subplots()
+    x = []
+    y = []
+    for i in range(0, len(data)):
+        x.append(i)
+        y.append(data[i][4])
+    plt.bar(x, y)
+    plt.show()
 
 main()
