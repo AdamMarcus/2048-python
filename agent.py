@@ -205,7 +205,7 @@ class DNNAgent(Agent):
 
         # Init neural net
         # Number and size of hidden layers
-        self.size = [16]
+        self.size = [64, 16]
         # Using "relu" activation function, a standard in the industry
         # self.mlp = MLPClassifier(hidden_layer_sizes=self.size, activation='relu', max_iter=700)
         self.mlp = MLPClassifier(hidden_layer_sizes=self.size, activation='relu', max_iter=700)
@@ -221,8 +221,8 @@ class DNNAgent(Agent):
             self.xTrain, self.yTrain = self.getTrainsFromPickleData(trainDataPickle, 20)
             self.fitModel(self.xTrain, self.yTrain)
             #########################
-            with open('ULRD_trained_model_20_game_layers_16.pickle', 'wb') as f:
-                pickle.dump(self.mlp, f)
+            # with open('ULRD_trained_model_20_game_layers_16.pickle', 'wb') as f:
+            #     pickle.dump(self.mlp, f)
             #########################
         else:
             print("Specified both train data file and data set, please only pass one of the two")
@@ -347,3 +347,23 @@ class DNNAgent(Agent):
             return (xTrain, yTrain)
         else:
             print("No train dataset")
+
+
+# class ExistingAgent(Agent):
+#     def __init__(self, gGrid, existingModelPickle, waitTime=0.1, gameSessionFile=None):
+#         self.agent = None
+#         with open(existingModelPickle, 'rb') as f:
+#             self.agent = pickle.load(f)
+#         self.agent.setGameGrid(gGrid)
+#         self.agent.waitTime = waitTime
+#         self.agent.gameSessionFile = gameSessionFile
+#
+#     def promptAgent(self):
+#         self.agent.promptAgent()
+#
+#     # Retrieve the current game board
+#     def getCurrMat(self):
+#         return self.agent.myGrid.matrix
+#
+#     def setGameGrid(self, gameGrid):
+#         self.agent.setGameGrid(gameGrid)

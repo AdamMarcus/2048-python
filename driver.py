@@ -7,22 +7,14 @@ import numpy as np
 
 def main():
     # runner = TrainingPartialCountRunner(20, 50, 4, 2)
-<<<<<<< HEAD
-    runner = TrainingWholeCountRunner(100, 20, 1, 20)
+    # runner = TrainingWholeCountRunner(100, 20, 1, 20)
     # runner = TrainingPartialCountRunner(10, 100, 4, 20)
     # runner = TrainingWholeCountRunner(20, 20, 4, 5)
     # runner = TrainWholePercentRunner(1, 2, 4, .01)
     # runner = TrainPartialPercentRunner(10, 100, 4, .01)
+    # runner = TrainPartialPercentRunner(10, 100, 5, .01)
 
     runner.runTraining()
-
-    # runTraining(25, 100, .05)
-    # wederunTraining(25, 1000, .05)
-    # runTraining_perc(2, 5000, .01, 4)
-    # runTraining(10, 1000, 10, gamegrid, PatternAgentULRD(gamegrid, waitTime=0))
-    # runTraining(10, 1000, 10, gamegrid, PatternAgentLURD(gamegrid, waitTime=0))
-    # runTraining(10, 1000, 10, gamegrid, ManualAgent(gamegrid, waitTime=0))
-    # runTraining(10, 1000, 10, gamegrid, DNNAgent(gamegrid, waitTime=0, trainName="training_epochs/train.pickle"))
 
 # This is an abstract implementation of a class to run training. This class handles how many epochs and itterations to run, and how to re-train.
 class Runner:
@@ -36,7 +28,7 @@ class Runner:
 
         self._trainingRecord = []
 
-    def createAgent(self, gameSessionFile=None, trainName=None, trainData=None, trainDataPickle=None):
+    def createAgent(self, gameSessionFile=None, trainName=None, trainData=None, trainDataPickle=None, existingAgent=None):
         if (self._agentCode == 0):
             self._gamegrid.setAgent(RandomAgent(None, waitTime=0))
         elif (self._agentCode == 1):
@@ -53,9 +45,6 @@ class Runner:
     def refreshGameGrid(self):
         self._gamegrid = GameGrid()
         self._gamegrid.hide()
-        self._gamegrid.setAgent(self._agent)
-        self._agent.setGameGrid(self._gamegrid)
-
 
     def runTraining(self):
         for epochNum in range(0, self._numEpochs):
