@@ -7,6 +7,13 @@ Must install pynput
     $ pip install matplotlib
     $ pip install sklearn
 
+Running the Code
+===========
+To run iterative training, run the driver.py file
+
+To run the test output, run the test.py file
+
+
 2048-python
 ===========
 

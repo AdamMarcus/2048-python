@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 def main():
     # Run itterative learning/training using a defined number of games output from the last epoch
-    # runner = TrainingPartialCountRunner(5, 5, 4, 5)
+    runner = TrainingPartialCountRunner(5, 5, 4, 5)
 
     # Run itterative learning/training using a defined number of games output from all epochs
     # Had a bug here right before turning in! This one doesnt work now
