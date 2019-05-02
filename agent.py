@@ -205,12 +205,16 @@ class DNNAgent(Agent):
 
         # Init neural net
         # Number and size of hidden layers
-        self.size = [64, 16]
+        self.size = [64]
         # Using "relu" activation function, a standard in the industry
         # self.mlp = MLPClassifier(hidden_layer_sizes=self.size, activation='relu', max_iter=700)
         self.mlp = MLPClassifier(hidden_layer_sizes=self.size, activation='relu', max_iter=700)
         print("Start Training")
-        if trainName != None and trainData == None:
+        if trainData == None and trainName == None and trainDataPickle == None:
+            self.xTrain, self.yTrain = self.getTrainsFromFile("random_train.pickle")
+            print("Fitting Model")
+            self.fitModel(self.xTrain, self.yTrain)
+        elif trainName != None and trainData == None:
             self.xTrain, self.yTrain = self.getTrainsFromFile(trainName)
             print("Fitting Model")
             self.fitModel(self.xTrain, self.yTrain)
